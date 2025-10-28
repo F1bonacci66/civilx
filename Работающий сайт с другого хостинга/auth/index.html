@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <base href="/taskflow.app/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Авторизация - CivilX</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: system-ui, sans-serif; 
+            background: #000; 
+            color: #fff; 
+            line-height: 1.6; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+        .header { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            background: rgba(0,0,0,0.9); 
+            border-bottom: 1px solid #333; 
+            z-index: 50; 
+        }
+        .header-content { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            height: 4rem; 
+        }
+        .logo { 
+            font-weight: bold; 
+            font-size: 1.5rem; 
+            color: #fff; 
+            text-decoration: none; 
+        }
+        .nav { 
+            display: flex; 
+            align-items: center; 
+            gap: 2rem; 
+        }
+        .nav a { 
+            color: #fff; 
+            text-decoration: none; 
+            font-weight: 500; 
+            padding: 1rem 2rem; 
+            border-radius: 0.375rem; 
+            transition: all 0.2s; 
+        }
+        .nav a:hover { 
+            background: rgba(255,255,255,0.1); 
+            color: #14b8a6; 
+        }
+        .user-icon { 
+            color: #fff; 
+            text-decoration: none; 
+            padding: 0.75rem; 
+            border-radius: 0.5rem; 
+            transition: all 0.2s; 
+            font-size: 1.5rem; 
+        }
+        .user-icon:hover { 
+            background: rgba(255,255,255,0.1); 
+            color: #14b8a6; 
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6rem 0 2rem;
+        }
+        .auth-container {
+            background: rgba(31,41,55,0.8);
+            border-radius: 1rem;
+            padding: 3rem;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid #374151;
+        }
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #374151;
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .auth-tab.active {
+            color: #14b8a6;
+            border-bottom-color: #14b8a6;
+        }
+        .auth-tab:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .auth-form {
+            display: none;
+        }
+        .auth-form.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #374151;
+            border-radius: 0.5rem;
+            background: rgba(17,24,39,0.5);
+            color: #fff;
+            font-size: 1rem;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #14b8a6;
+            box-shadow: 0 0 0 3px rgba(20,184,166,0.1);
+        }
+        .btn {
+            width: 100%;
+            background: #14b8a6;
+            color: #000;
+            font-weight: 600;
+            padding: 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: #0d9488;
+        }
+        .btn:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+        }
+        .error-message {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .success-message {
+            background: rgba(34,197,94,0.1);
+            border: 1px solid #22c55e;
+            color: #86efac;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 1rem 0;
+        }
+        .spinner {
+            border: 2px solid #374151;
+            border-top: 2px solid #14b8a6;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .footer { 
+            border-top: 1px solid #333; 
+            padding: 2rem 0; 
+            text-align: center; 
+        }
+        .footer p { color: #999; }
+        @media (max-width: 768px) {
+            .nav { display: none; }
+            .auth-container { padding: 2rem; margin: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="./" class="logo">
+                    <img src="./main_icon.svg" alt="CivilX" style="height: 120px; margin-top: 10px;">
+                </a>
+                <nav class="nav">
+                    <a href="./">О нас</a>
+                    <a href="./pricing/">Продукт</a>
+                    <a href="./subscriptions/">Подписки</a>
+                </nav>
+        <a href="./auth/" class="user-icon" title="Войти в аккаунт">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+        </a>
+            </div>
+        </div>
+    </header>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="auth-container">
+                <div class="auth-tabs">
+                    <div class="auth-tab active" onclick="switchTab('login')">Вход</div>
+                    <div class="auth-tab" onclick="switchTab('register')">Регистрация</div>
+                </div>
+
+                <!-- Error/Success Messages -->
+                <div id="errorMessage" class="error-message"></div>
+                <div id="successMessage" class="success-message"></div>
+
+                <!-- Login Form -->
+                <form id="loginForm" class="auth-form active">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Пароль</label>
+                        <input type="password" id="loginPassword" name="password" required>
+                    </div>
+                    <div class="loading" id="loginLoading">
+                        <div class="spinner"></div>
+                        <p>Вход в систему...</p>
+                    </div>
+                    <button type="submit" class="btn" id="loginBtn">Войти</button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="registerName">Имя</label>
+                        <input type="text" id="registerName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Пароль</label>
+                        <input type="password" id="registerPassword" name="password" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="userType">Тип пользователя</label>
+                        <select id="userType" name="user_type" required>
+                            <option value="">Выберите тип</option>
+                            <option value="user">Физическое лицо</option>
+                            <option value="organization">Организация</option>
+                            <option value="contractor">Подрядчик</option>
+                            <option value="supplier">Поставщик</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="companyGroup" style="display: none;">
+                        <label for="companyName">Название компании</label>
+                        <input type="text" id="companyName" name="company_name">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Телефон (необязательно)</label>
+                        <input type="tel" id="phone" name="phone">
+                    </div>
+                    <div class="loading" id="registerLoading">
+                        <div class="spinner"></div>
+                        <p>Создание аккаунта...</p>
+                    </div>
+                    <button type="submit" class="btn" id="registerBtn">Зарегистрироваться</button>
+                </form>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="footer">
+        <div class="container">
+            <p>© 2024 CivilX. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Tab switching
+        function switchTab(tab) {
+            // Update tabs
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+            
+            // Update forms
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.getElementById(tab + 'Form').classList.add('active');
+            
+            // Clear messages
+            hideMessages();
+        }
+
+        // Show/hide company field based on user type
+        document.getElementById('userType').addEventListener('change', function() {
+            const companyGroup = document.getElementById('companyGroup');
+            const companyName = document.getElementById('companyName');
+            
+            if (this.value === 'organization' || this.value === 'contractor' || this.value === 'supplier') {
+                companyGroup.style.display = 'block';
+                companyName.required = true;
+            } else {
+                companyGroup.style.display = 'none';
+                companyName.required = false;
+            }
+        });
+
+        // Utility functions
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function setLoading(formType, isLoading) {
+            const loading = document.getElementById(formType + 'Loading');
+            const btn = document.getElementById(formType + 'Btn');
+            
+            if (isLoading) {
+                loading.style.display = 'block';
+                btn.disabled = true;
+                btn.textContent = 'Загрузка...';
+            } else {
+                loading.style.display = 'none';
+                btn.disabled = false;
+                btn.textContent = formType === 'login' ? 'Войти' : 'Зарегистрироваться';
+            }
+        }
+
+        // API functions
+        async function apiRequest(url, data) {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.error || 'Ошибка сервера');
+            }
+            
+            return result;
+        }
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            hideMessages();
+            setLoading('login', true);
+
+            try {
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData);
+                
+                const result = await apiRequest('./auth-api.php/api/login', data);
+                
+                // Debug token
+                console.log('Login result:', result);
+                console.log('Token received:', result.token);
+                console.log('Token type:', typeof result.token);
+                console.log('Token length:', result.token ? result.token.length : 'null');
+                console.log('Token parts:', result.token ? result.token.split('.').length : 'null');
+                
+                // Store token
+                localStorage.setItem('authToken', result.token);
+                localStorage.setItem('user', JSON.stringify(result.user));
+                
+                showSuccess('Успешный вход! Перенаправление...');
+                
+                // Redirect to dashboard or home
+                setTimeout(() => {
+                    window.location.href = './dashboard/';
+                }, 1500);
+                
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                setLoading('login', false);
+            }
+        });
+
+        // Register form handler
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            hideMessages();
+            setLoading('register', true);
+
+            try {
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData);
+                
+                // Remove empty fields
+                Object.keys(data).forEach(key => {
+                    if (data[key] === '') {
+                        delete data[key];
+                    }
+                });
+                
+                const result = await apiRequest('./auth-api.php/api/register', data);
+                
+                // Debug token
+                console.log('Register result:', result);
+                console.log('Token received:', result.token);
+                console.log('Token type:', typeof result.token);
+                console.log('Token length:', result.token ? result.token.length : 'null');
+                console.log('Token parts:', result.token ? result.token.split('.').length : 'null');
+                
+                // Store token
+                localStorage.setItem('authToken', result.token);
+                localStorage.setItem('user', JSON.stringify(result.user));
+                
+                showSuccess('Регистрация успешна! Перенаправление...');
+                
+                // Redirect to dashboard or home
+                setTimeout(() => {
+                    window.location.href = './dashboard/';
+                }, 1500);
+                
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                setLoading('register', false);
+            }
+        });
+
+        // Check if user is already logged in
+        window.addEventListener('load', function() {
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                // User is already logged in, redirect to home
+                window.location.href = './dashboard/';
+            }
+        });
+    </script>
+</body>
+</html>
