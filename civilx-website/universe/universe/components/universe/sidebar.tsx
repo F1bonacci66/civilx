@@ -1039,6 +1039,12 @@ export function Sidebar({ projectId, versionId }: SidebarProps) {
             zIndex: 999999, // Максимальный z-index для перекрытия всего контента
             isolation: 'isolate', // Создаем новый stacking context
             pointerEvents: 'auto', // Убеждаемся, что меню интерактивно
+          } as React.CSSProperties & { zIndex: number }}
+          ref={(el) => {
+            // Дополнительно устанавливаем z-index через DOM API для гарантии
+            if (el) {
+              el.style.setProperty('z-index', '999999', 'important')
+            }
           }}
         >
           {openMenuId.startsWith('project-') && (() => {
